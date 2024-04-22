@@ -20,15 +20,21 @@ public class MucInvitationInterceptor implements PacketInterceptor
             return;
         }
 
-        final Element extension = packet.getElement().element(QName.get("x", "http://jabber.org/protocol/muc#user"));
-        if (extension == null) {
-            return;
+        final Element extension1 = packet.getElement().element(QName.get("x", "http://jabber.org/protocol/muc#user"));
+        if (extension1 != null) {
+            final Element invite = extension1.element("invite");
+            if (invite != null) {
+                Log.info("Rejecting MUC invite: {}", packet.toXML());
+                throw new PacketRejectedException("Rejected MUC invite.");
+            }
         }
 
-        final Element invite = extension.element("invite");
-        if (invite != null) {
-            Log.info("Rejecting MUC invite: {}", packet.toXML());
-            throw new PacketRejectedException("Rejected MUC invite.");
+        final Element extension2 = packet.getElement().element(QName.get("x", "jabber:x:conference"));
+        if (extension2 != null) {
+            if (extension2.attribute("jid") != null) {
+                Log.info("Rejecting MUC invite: {}", packet.toXML());
+                throw new PacketRejectedException("Rejected MUC invite.");
+            }
         }
     }
 }
